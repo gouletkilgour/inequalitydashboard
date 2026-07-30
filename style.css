@@ -177,3 +177,12 @@ header.site-header .subtitle {
 .post-body p {
   margin: 0 0 1.1rem;
 }
+
+.post-body h3 {
+  font-size: 1.05rem;
+  margin: 1.75rem 0 0.75rem;
+}
+
+.post-body h3:first-child {
+  margin-top: 0;
+}
