@@ -157,3 +157,23 @@ header.site-header .subtitle {
     flex-direction: column;
   }
 }
+
+/* Post page */
+.post-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+}
+
+.post-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.post-body {
+  max-width: 680px;
+}
+
+.post-body p {
+  margin: 0 0 1.1rem;
+}
