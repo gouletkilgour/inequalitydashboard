@@ -1,0 +1,159 @@
+:root {
+  --bg: #ffffff;
+  --text: #1a1a1a;
+  --muted: #666666;
+  --border: #e0e0e0;
+  --accent: #2a5db0;
+  --card-bg: #f7f7f8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15161a;
+    --text: #ececec;
+    --muted: #9a9a9a;
+    --border: #33343a;
+    --accent: #7aa2f7;
+    --card-bg: #1e1f24;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+header.site-header {
+  margin-bottom: 2.5rem;
+}
+
+header.site-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+}
+
+header.site-header a {
+  color: inherit;
+  text-decoration: none;
+}
+
+header.site-header .subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.breadcrumb {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+
+.breadcrumb a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Landing page category grid */
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.category-card {
+  flex: 1 1 200px;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.15s ease;
+}
+
+.category-card:hover {
+  border-color: var(--accent);
+}
+
+.category-card h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.category-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Category page: three horizontal sections */
+.sections {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.section {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  background: var(--card-bg);
+}
+
+.section h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.section ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.section li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.92rem;
+}
+
+.section li:last-child {
+  border-bottom: none;
+}
+
+.section li a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.section li a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 700px) {
+  .sections {
+    flex-direction: column;
+  }
+}
