@@ -79,7 +79,12 @@ header.site-header .subtitle {
 }
 
 .category-card {
-  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 110px;
+  padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--card-bg);
@@ -93,14 +98,8 @@ header.site-header .subtitle {
 }
 
 .category-card h2 {
-  margin: 0 0 0.35rem;
-  font-size: 1.15rem;
-}
-
-.category-card p {
   margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 1.15rem;
 }
 
 /* Category page: three horizontal sections */
