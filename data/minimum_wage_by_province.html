@@ -251,7 +251,7 @@
 
     document.getElementById("rank-list").innerHTML = entries.map(function(e, i) {
       var cls = "rank-row" + (e.province === currentProvince ? " rank-active" : "");
-      return '<div class="' + cls + '" onclick="selectProvince(\\'' + e.province + '\\')">'
+      return '<div class="' + cls + '" onclick="selectProvince(\'' + e.province + '\')">'
            + '<span class="rank-num">' + (i + 1) + '</span>'
            + '<span class="rank-name">' + e.province + '</span>'
            + '<span class="rank-val">$' + e.value.toFixed(2) + '</span>'
