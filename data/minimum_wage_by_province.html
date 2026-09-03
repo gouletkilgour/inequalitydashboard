@@ -157,7 +157,7 @@
     <div class="prose">
       <h2>What this shows</h2>
       <p>
-        The <strong>general (basic adult) minimum hourly wage</strong> in each of Canada's ten provinces, from the earliest year each province set a single, sex-neutral rate through the present.
+        The <strong>general (basic adult) minimum hourly wage</strong> in each of Canada's ten provinces, plus their unweighted average, from January 1, 1974 &mdash; the date every province has a comparable general rate &mdash; through the present. The average line is shown by default; click any province, or a row in the ranking list, to highlight it instead.
       </p>
 
       <h2>Data source</h2>
@@ -173,10 +173,11 @@
         <li>This is the general adult minimum wage only &mdash; it excludes separate rates that applied to young/student workers or specific occupations (e.g. liquor servers, homeworkers), which are tracked separately by ESDC.</li>
         <li><strong>Sex-differentiated rates are excluded.</strong> Newfoundland and Labrador, Nova Scotia, Ontario, and Prince Edward Island each set explicitly lower rates for women than men for some period after 1965.</li>
         <li><strong>Regional and sectoral variation is also excluded</strong> &mdash; rather than picking one of two coexisting rates (e.g. an urban vs. a non-urban rate), each affected province's series simply starts once a single rate covered every worker in the province: Alberta (urban/non-urban split until 1966), New Brunswick (one rate for wholesale/retail/manufacturing only until 1968), Ontario (a lower Northern Ontario Zone rate until 1965), Quebec (a Montreal-area premium until 1971), Saskatchewan (a metropolitan-area premium until 1972), and Manitoba (urban/rural split until 1966).</li>
-        <li>Putting both exclusions together, each province's series begins at the first date a single rate, with no sex, regional, or sectoral differentiation, covered the whole province: Ontario &mdash; December 27, 1965; British Columbia &mdash; January 1, 1965 (never split); Manitoba &mdash; December 1, 1966; Alberta &mdash; July 1, 1966; New Brunswick &mdash; January 1, 1968; Newfoundland and Labrador &mdash; June 1, 1972; Nova Scotia &mdash; July 1, 1972; Quebec &mdash; May 1, 1971; Saskatchewan &mdash; January 2, 1972; Prince Edward Island &mdash; January 1, 1974.</li>
+        <li>Putting both exclusions together, each province's sourced record begins at the first date a single rate, with no sex, regional, or sectoral differentiation, covered the whole province: Ontario &mdash; December 27, 1965; British Columbia &mdash; January 1, 1965 (never split); Manitoba &mdash; December 1, 1966; Alberta &mdash; July 1, 1966; New Brunswick &mdash; January 1, 1968; Newfoundland and Labrador &mdash; June 1, 1972; Nova Scotia &mdash; July 1, 1972; Quebec &mdash; May 1, 1971; Saskatchewan &mdash; January 2, 1972; Prince Edward Island &mdash; January 1, 1974.</li>
+        <li><strong>The chart and data table display every province from January 1, 1974 onward</strong> &mdash; Prince Edward Island's start date, the latest of the ten &mdash; even though most provinces' sourced record (above) goes back further, so every province is shown over the same span and is directly comparable. For a province whose record starts earlier, the displayed series' first point holds whatever rate was already in effect on January 1, 1974 (noted on hover and in the table); no earlier data is discarded, only left out of this display.</li>
         <li>Data is shown only through today; rates already enacted for a future date are not included, and the page does not update automatically when new rates take effect.</li>
         <li>Each province's line is extended flat to today at its last recorded rate (e.g. Alberta's line continues at $15.00 through the present) so a rate that simply hasn't changed recently still reads as in effect, rather than the line appearing to end; this doesn't add a new rate change, only a visual continuation, and is noted on hover.</li>
-        <li><strong>Canada (average)</strong> is the unweighted mean of the ten provinces' rates, shown as a dashed line. It starts January 1, 1974 &mdash; the latest of the ten provinces' start dates (Prince Edward Island's) &mdash; so the average is always computed across all ten provinces rather than jumping as provinces with earlier data drop in.</li>
+        <li><strong>Canada (average)</strong> is the unweighted mean of the ten provinces' rates, shown as a dashed line, red when selected (provinces turn blue when selected). It runs the same January 1, 1974 through today span as the provinces, so it's always computed across all ten.</li>
         <li>Alberta and Saskatchewan currently sit at the bottom of the ranking &mdash; Alberta's general rate has not changed since October 2018.</li>
       </ul>
 
@@ -195,10 +196,17 @@
   const AVERAGE_NAME = "Canada (average)";
 
   const HIGHLIGHT_COLOR = "#2a78d6";
+  const AVERAGE_HIGHLIGHT_COLOR = "#e34948";
   const MUTED_COLOR = "#c3c2b7";
   const AVERAGE_COLOR = "#333333";
 
-  var currentProvince = "Ontario";
+  // The latest of the ten provinces' series-start dates (Prince Edward
+  // Island's, 1974-01-01). The chart and the data table both start here for
+  // every province, so all ten (and the average) are shown over the same,
+  // consistent span rather than each starting at its own earliest date.
+  const DISPLAY_START = PROVINCES.map(function(p) { return DATA[p].dates[0]; }).sort().pop();
+
+  var currentProvince = AVERAGE_NAME;
 
   // Value in effect on `date`, per the step function defined by (dates, rates)
   // (dates assumed sorted ascending). Returns undefined if `date` precedes the
@@ -211,14 +219,25 @@
     return v;
   }
 
-  // A province's series extended with one extra point at TODAY (holding the
-  // last known rate) if its last recorded change predates today, so the line
-  // visibly continues through the present instead of appearing to end.
-  function extended(prov) {
+  // A province's full sourced series (which may start earlier than
+  // DISPLAY_START), trimmed to start at DISPLAY_START - synthesizing a
+  // starting point holding whatever rate was already in effect on that date,
+  // if the province didn't happen to change rates exactly then - and then
+  // extended with one extra point at TODAY (holding the last known rate) if
+  // its last recorded change predates today, so the line visibly continues
+  // through the present instead of appearing to end.
+  function displaySeries(prov) {
     var d = DATA[prov];
-    var dates = d.dates.slice();
-    var rates = d.rates.slice();
-    var notes = d.notes.slice();
+    var dates = [], rates = [], notes = [];
+    if (d.dates.indexOf(DISPLAY_START) === -1) {
+      var lastChange = stepValueAt(d.dates, d.dates, DISPLAY_START);
+      dates.push(DISPLAY_START);
+      rates.push(stepValueAt(d.dates, d.rates, DISPLAY_START));
+      notes.push("In effect since " + lastChange + "; series shown from " + DISPLAY_START + " onward for consistency across all provinces.");
+    }
+    d.dates.forEach(function(dt, i) {
+      if (dt >= DISPLAY_START) { dates.push(dt); rates.push(d.rates[i]); notes.push(d.notes[i]); }
+    });
     var lastDate = dates[dates.length - 1];
     if (lastDate < TODAY) {
       dates.push(TODAY);
@@ -229,17 +248,14 @@
   }
 
   // Unweighted mean of all ten provinces' rates, computed at every date any
-  // province's rate changes. Starts once every province has a general rate
-  // in effect (the latest of the ten start dates, Prince Edward Island's
-  // 1974-01-01) so the average isn't distorted by provinces dropping in and
-  // out of a shifting, smaller set as their series begin at different dates.
+  // province's rate changes, from DISPLAY_START (once every province has a
+  // general rate in effect) through today.
   function computeAverageSeries() {
-    var start = PROVINCES.map(function(p) { return DATA[p].dates[0]; }).sort().pop();
     var dateSet = {};
     PROVINCES.forEach(function(p) {
-      DATA[p].dates.forEach(function(dt) { if (dt >= start) { dateSet[dt] = true; } });
+      DATA[p].dates.forEach(function(dt) { if (dt >= DISPLAY_START) { dateSet[dt] = true; } });
     });
-    dateSet[start] = true;
+    dateSet[DISPLAY_START] = true;
     dateSet[TODAY] = true;
     var dates = Object.keys(dateSet).sort();
     var rates = dates.map(function(dt) {
@@ -276,7 +292,7 @@
   function buildTraces(selected) {
     var traces = PROVINCES.map(function(prov) {
       var isSel = prov === selected;
-      var d = extended(prov);
+      var d = displaySeries(prov);
       return {
         type: "scatter",
         mode: "lines",
@@ -300,7 +316,7 @@
       name: AVERAGE_NAME,
       x: AVERAGE_SERIES.dates,
       y: AVERAGE_SERIES.rates,
-      line: { shape: "hv", color: avgSel ? HIGHLIGHT_COLOR : AVERAGE_COLOR, width: avgSel ? 3 : 2, dash: avgSel ? "solid" : "dot" },
+      line: { shape: "hv", color: avgSel ? AVERAGE_HIGHLIGHT_COLOR : AVERAGE_COLOR, width: avgSel ? 3 : 2, dash: avgSel ? "solid" : "dot" },
       opacity: 1,
       hovertemplate: AVERAGE_NAME + "<br>%{x}<br>$%{y:.2f}/hr<extra></extra>",
     });
@@ -334,7 +350,7 @@
   }
 
   function renderTable(name) {
-    var d = name === AVERAGE_NAME ? AVERAGE_SERIES : DATA[name];
+    var d = name === AVERAGE_NAME ? AVERAGE_SERIES : displaySeries(name);
     document.getElementById("history-body").innerHTML = d.dates.map(function(date, i) {
       return '<tr><td>' + date + '</td><td>$' + d.rates[i].toFixed(2) + '</td><td class="note">' + (d.notes[i] || '') + '</td></tr>';
     }).join('');
