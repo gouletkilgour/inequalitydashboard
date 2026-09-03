@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gender Income Gap &mdash; Inequality Dashboard</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    main { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #chart-section { min-height: 640px; }
+
+    .about-section { background: var(--bg); }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+
+    .chart-controls {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .chart-ctrl { display: flex; align-items: center; gap: 0.5rem; }
+    .chart-ctrl-label { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+
+    .chart-controls select {
+      font-family: inherit;
+      font-size: 0.82rem;
+      padding: 0.22rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .chart-controls select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(42, 93, 176, 0.2);
+    }
+
+    #chart { flex: 1; min-height: 540px; }
+
+    .prose { flex: 1; padding: 1.5rem 1.75rem; line-height: 1.7; font-size: 0.93rem; overflow: auto; }
+  </style>
+</head>
+<body>
+
+<div class="page" style="padding-bottom: 1rem;">
+  <header class="site-header">
+    <h1><a href="../index.html">Inequality Dashboard</a></h1>
+    <p class="subtitle">Stone Centre on Wealth and Income Inequality | Vancouver School of Economics | University of British Columbia</p>
+  </header>
+
+  <p class="breadcrumb"><a href="../index.html">&larr; All categories</a> / <a href="../income.html">Income</a></p>
+
+  <h2 class="post-title">Gender Income Gap</h2>
+</div>
+
+<main class="page" style="padding: 1.5rem 1.5rem;">
+  <section id="chart-section">
+    <div class="section-label">Chart</div>
+    <div class="chart-controls">
+      <div class="chart-ctrl">
+        <span class="chart-ctrl-label">Measure</span>
+        <select id="measure-select">
+          <option value="market">Market Income</option>
+          <option value="total">Total Income</option>
+        </select>
+      </div>
+      <div class="chart-ctrl">
+        <span class="chart-ctrl-label">Statistic</span>
+        <select id="stat-select">
+          <option value="mean">Mean (Men &amp; Women)</option>
+          <option value="median">Median (Men &amp; Women)</option>
+          <option value="gap_pct_mean">Gender Gap &mdash; Mean (%)</option>
+          <option value="gap_pct_median">Gender Gap &mdash; Median (%)</option>
+          <option value="gap_abs_mean">Gender Gap &mdash; Mean ($)</option>
+          <option value="gap_abs_median">Gender Gap &mdash; Median ($)</option>
+        </select>
+      </div>
+    </div>
+    <div id="chart"></div>
+  </section>
+
+  <section class="about-section">
+    <div class="section-label">About this data</div>
+    <div class="prose"></div>
+  </section>
+</main>
+
+<script>
+  const DATA = {"total": {"men": {"mean": {"years": [1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "values": [64500.0, 60900.0, 62300.0, 61200.0, 62400.0, 60600.0, 58700.0, 57800.0, 56600.0, 58100.0, 58900.0, 58900.0, 60300.0, 61300.0, 59800.0, 57700.0, 57200.0, 55200.0, 56200.0, 55600.0, 56100.0, 56700.0, 58600.0, 60200.0, 61800.0, 62500.0, 62200.0, 61900.0, 63100.0, 62800.0, 62500.0, 63900.0, 65000.0, 63200.0, 63700.0, 64300.0, 65600.0, 66300.0, 67400.0, 66900.0, 66000.0, 67700.0, 67700.0, 66900.0, 69000.0, 70300.0, 70100.0, 69800.0, 70600.0]}, "median": {"years": [1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "values": [57100.0, 56700.0, 56800.0, 55700.0, 57000.0, 54700.0, 51300.0, 49800.0, 48500.0, 49600.0, 50000.0, 50400.0, 52100.0, 53000.0, 51200.0, 48300.0, 47300.0, 45600.0, 46400.0, 46000.0, 45400.0, 45000.0, 46000.0, 47900.0, 48300.0, 48600.0, 48400.0, 48000.0, 49000.0, 48600.0, 48700.0, 49300.0, 50000.0, 48800.0, 48500.0, 49200.0, 51000.0, 50400.0, 51400.0, 51000.0, 50200.0, 51500.0, 51500.0, 52000.0, 53100.0, 53500.0, 52900.0, 52800.0, 52700.0]}}, "women": {"mean": {"years": [1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "values": [27800.0, 29400.0, 30000.0, 29800.0, 30700.0, 31200.0, 31000.0, 30500.0, 31500.0, 31800.0, 32600.0, 33100.0, 33900.0, 35400.0, 34900.0, 34300.0, 35000.0, 34200.0, 34100.0, 35100.0, 34200.0, 34000.0, 35200.0, 36300.0, 37000.0, 38000.0, 38100.0, 38000.0, 38600.0, 39500.0, 40600.0, 42000.0, 42100.0, 43500.0, 43300.0, 43300.0, 44100.0, 45100.0, 45200.0, 46300.0, 46400.0, 47900.0, 48100.0, 48900.0, 51900.0, 52500.0, 51400.0, 51700.0, 52600.0]}, "median": {"years": [1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "values": [20700.0, 22400.0, 23000.0, 22700.0, 23200.0, 23900.0, 23600.0, 22300.0, 23800.0, 24300.0, 25000.0, 25600.0, 26200.0, 28200.0, 27100.0, 26500.0, 26700.0, 26700.0, 26600.0, 26700.0, 25700.0, 25800.0, 26000.0, 27300.0, 27600.0, 28600.0, 28100.0, 28300.0, 28700.0, 29400.0, 30000.0, 31200.0, 31100.0, 32100.0, 31900.0, 32500.0, 33100.0, 34300.0, 34500.0, 34900.0, 35500.0, 36500.0, 37000.0, 38300.0, 41000.0, 41500.0, 40100.0, 40900.0, 41000.0]}}}, "market": {"men": {"mean": {"years": [1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "values": [63900.0, 59900.0, 61500.0, 60600.0, 61200.0, 59400.0, 57000.0, 56100.0, 55100.0, 56500.0, 57300.0, 57200.0, 58500.0, 59400.0, 57400.0, 55400.0, 54800.0, 53300.0, 54800.0, 54200.0, 55000.0, 56300.0, 58000.0, 59600.0, 61300.0, 61600.0, 61300.0, 61200.0, 62300.0, 62200.0, 61700.0, 63100.0, 64600.0, 62300.0, 63000.0, 63900.0, 64700.0, 65600.0, 66900.0, 66600.0, 65500.0, 67200.0, 67100.0, 65900.0, 65000.0, 68000.0, 69000.0, 68700.0, 70000.0]}, "median": {"years": [1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "values": [57100.0, 57200.0, 56900.0, 56200.0, 56500.0, 54700.0, 50300.0, 49100.0, 47800.0, 48600.0, 49100.0, 49500.0, 51200.0, 51600.0, 48900.0, 46100.0, 44800.0, 43300.0, 45100.0, 44800.0, 44700.0, 44500.0, 45400.0, 47000.0, 47500.0, 47400.0, 47300.0, 46900.0, 47100.0, 47700.0, 47200.0, 47800.0, 49400.0, 47200.0, 47000.0, 47900.0, 49500.0, 48700.0, 50100.0, 49800.0, 49300.0, 50100.0, 50100.0, 50100.0, 48800.0, 50700.0, 50800.0, 50700.0, 51200.0]}}, "women": {"mean": {"years": [1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "values": [28100.0, 29400.0, 29500.0, 29400.0, 29500.0, 30200.0, 29600.0, 29200.0, 30100.0, 30400.0, 31000.0, 31400.0, 32300.0, 33700.0, 32500.0, 32100.0, 32900.0, 32200.0, 32300.0, 33200.0, 33200.0, 33200.0, 34300.0, 34900.0, 35900.0, 36300.0, 36400.0, 36200.0, 36800.0, 37700.0, 38600.0, 40000.0, 40100.0, 41400.0, 41200.0, 41000.0, 41900.0, 43300.0, 43200.0, 44400.0, 44000.0, 44800.0, 45300.0, 45700.0, 45300.0, 47600.0, 47700.0, 48200.0, 49300.0]}, "median": {"years": [1976, 1977, 1978, 1979, 1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "values": [21700.0, 23400.0, 22900.0, 22900.0, 22300.0, 23700.0, 22500.0, 21000.0, 22200.0, 23100.0, 23800.0, 23500.0, 24900.0, 26800.0, 24600.0, 23400.0, 23200.0, 23300.0, 23400.0, 23900.0, 23500.0, 24200.0, 24100.0, 24900.0, 25600.0, 25900.0, 25300.0, 25600.0, 25800.0, 26600.0, 27200.0, 28500.0, 28200.0, 28900.0, 29300.0, 29200.0, 29900.0, 31700.0, 32200.0, 32400.0, 32300.0, 32200.0, 33900.0, 34700.0, 31700.0, 34800.0, 35400.0, 36800.0, 36900.0]}}}};
+
+  const MEASURE_LABELS = { total: "Total Income", market: "Market Income" };
+
+  const STAT_DEFS = {
+    mean:              { mode: "lines",    statKey: "mean" },
+    median:            { mode: "lines",    statKey: "median" },
+    gap_pct_mean:      { mode: "gap-pct",  statKey: "mean",   label: "Gender Gap — Mean (%)" },
+    gap_pct_median:    { mode: "gap-pct",  statKey: "median", label: "Gender Gap — Median (%)" },
+    gap_abs_mean:      { mode: "gap-abs",  statKey: "mean",   label: "Gender Gap — Mean ($)" },
+    gap_abs_median:    { mode: "gap-abs",  statKey: "median", label: "Gender Gap — Median ($)" },
+  };
+
+  const MEN_COLOR = "#2a78d6";
+  const WOMEN_COLOR = "#eb6834";
+  const GAP_COLOR = "#e34948";
+
+  var currentMeasure = "market";
+  var currentStat = "mean";
+
+  var MARGIN_T = 50, MARGIN_B = 130;
+
+  function seriesFor(measure, gender, statKey) {
+    return DATA[measure][gender][statKey];
+  }
+
+  function computeGap(measure, statKey, mode) {
+    var men = seriesFor(measure, "men", statKey);
+    var women = seriesFor(measure, "women", statKey);
+    var values = men.years.map(function(y, i) {
+      var diff = men.values[i] - women.values[i];
+      return mode === "gap-pct" ? (diff / men.values[i]) * 100 : diff;
+    });
+    return { years: men.years, values: values };
+  }
+
+  function buildTitle(measure, statOption) {
+    var m = MEASURE_LABELS[measure];
+    switch (statOption) {
+      case "mean":           return m + " by Gender (Mean)";
+      case "median":         return m + " by Gender (Median)";
+      case "gap_pct_mean":   return "Gender Gap in Mean " + m + " (%)";
+      case "gap_pct_median": return "Gender Gap in Median " + m + " (%)";
+      case "gap_abs_mean":   return "Gender Gap in Mean " + m + " ($)";
+      case "gap_abs_median": return "Gender Gap in Median " + m + " ($)";
+    }
+  }
+
+  function buildTraces(measure, statOption) {
+    var def = STAT_DEFS[statOption];
+    if (def.mode === "lines") {
+      var men = seriesFor(measure, "men", def.statKey);
+      var women = seriesFor(measure, "women", def.statKey);
+      return [
+        {
+          type: "scatter", mode: "lines", name: "Men",
+          x: men.years, y: men.values,
+          line: { color: MEN_COLOR, width: 2.5 },
+          hovertemplate: "$%{y:,.0f}<extra>Men</extra>",
+        },
+        {
+          type: "scatter", mode: "lines", name: "Women",
+          x: women.years, y: women.values,
+          line: { color: WOMEN_COLOR, width: 2.5 },
+          hovertemplate: "$%{y:,.0f}<extra>Women</extra>",
+        },
+      ];
+    }
+    var g = computeGap(measure, def.statKey, def.mode);
+    var valueFmt = def.mode === "gap-pct" ? "%{y:.1f}%" : "$%{y:,.0f}";
+    return [{
+      type: "scatter", mode: "lines", name: def.label,
+      x: g.years, y: g.values,
+      line: { color: GAP_COLOR, width: 2.5 },
+      hovertemplate: valueFmt + "<extra>" + def.label + "</extra>",
+    }];
+  }
+
+  function buildLayout() {
+    var el    = document.getElementById("chart");
+    var plotH = Math.max((el.offsetHeight || 480) - MARGIN_T - MARGIN_B, 80);
+    var noteY = -((MARGIN_B - 15) / plotH);
+    var def = STAT_DEFS[currentStat];
+    var yTitle = def.mode === "gap-pct" ? "Percent (%)" : "2024 Constant Dollars ($)";
+    return {
+      title: { text: buildTitle(currentMeasure, currentStat) },
+      xaxis: { title: { text: "Year" } },
+      yaxis: { title: { text: yTitle } },
+      showlegend: def.mode === "lines",
+      legend: { x: 0.02, y: 0.98, xanchor: "left", yanchor: "top", bgcolor: "rgba(255,255,255,0.7)", bordercolor: "#ddd", borderwidth: 1 },
+      margin: { l: 70, b: MARGIN_B, r: 20, t: MARGIN_T },
+      paper_bgcolor: "white",
+      plot_bgcolor: "#E5ECF6",
+      hovermode: "x unified",
+      annotations: [{
+        xref: "paper", yref: "paper",
+        x: 0.5, y: noteY,
+        xanchor: "center", yanchor: "bottom",
+        showarrow: false,
+        text: "Chart created by the Stone Centre on Wealth and Income Inequality<br>at the Vancouver School of Economics (UBC) using data from Statistics Canada (Canadian Income Survey)",
+        font: { size: 9, color: "#b0b0b0" },
+      }],
+    };
+  }
+
+  function rerender() {
+    Plotly.react("chart", buildTraces(currentMeasure, currentStat), buildLayout(), { responsive: true });
+  }
+
+  document.getElementById("measure-select").addEventListener("change", function() {
+    currentMeasure = this.value;
+    rerender();
+  });
+
+  document.getElementById("stat-select").addEventListener("change", function() {
+    currentStat = this.value;
+    rerender();
+  });
+
+  Plotly.newPlot("chart", buildTraces(currentMeasure, currentStat), buildLayout(), { responsive: true });
+
+  // Recompute the attribution note's position whenever the chart div is
+  // resized. Debounced to avoid a relayout -> resize -> relayout loop.
+  var resizeTimer;
+  new ResizeObserver(function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      Plotly.relayout("chart", buildLayout());
+    }, 50);
+  }).observe(document.getElementById("chart"));
+</script>
+
+</body>
+</html>
