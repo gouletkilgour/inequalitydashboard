@@ -633,6 +633,15 @@ html = """<!DOCTYPE html>
 
     #chart { flex: 1; min-height: 540px; }
 
+    .chart-caption {
+      flex-shrink: 0;
+      padding: 0.5rem 1.25rem 0.9rem;
+      text-align: center;
+      font-size: 0.72rem;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
     .prose { flex: 1; padding: 1.5rem 1.75rem; line-height: 1.7; font-size: 0.93rem; overflow: auto; }
     .prose h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
     .prose p { color: var(--text); margin-bottom: 1rem; }
@@ -717,6 +726,7 @@ html = """<!DOCTYPE html>
   <section>
     <div class="section-label">Chart</div>
     <div id="chart"></div>
+    <div class="chart-caption">Chart created by the Stone Centre on Wealth and Income Inequality at the Vancouver School of Economics (UBC) using data from Employment and Social Development Canada</div>
   </section>
 
   <section id="rankings">
@@ -820,21 +830,13 @@ html = """<!DOCTYPE html>
   function buildLayout() {
     return {
       title: { text: "Provincial Minimum Wages - Canada" },
-      xaxis: { title: { text: "Year", standoff: 25 } },
+      xaxis: { title: { text: "Year", standoff: 15 } },
       yaxis: { title: { text: "Hourly Minimum Wage (Nominal \$ CAD)" } },
       showlegend: false,
-      margin: { l: 60, b: 150, r: 20, t: 50 },
+      margin: { l: 60, b: 60, r: 20, t: 50 },
       paper_bgcolor: "white",
       plot_bgcolor: "#E5ECF6",
       hovermode: "closest",
-      annotations: [{
-        xref: "paper", yref: "paper",
-        x: 0.5, y: -0.16,
-        xanchor: "center", yanchor: "bottom",
-        showarrow: false,
-        text: "Chart created by the Stone Centre on Wealth and Income Inequality<br>at the Vancouver School of Economics (UBC) using data from Employment and Social Development Canada",
-        font: { size: 9, color: "#b0b0b0" },
-      }],
     };
   }
 
