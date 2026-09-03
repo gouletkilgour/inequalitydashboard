@@ -241,16 +241,16 @@
   function buildLayout() {
     return {
       title: { text: "Provincial Minimum Wages - Canada" },
-      xaxis: { title: { text: "Year" } },
+      xaxis: { title: { text: "Year", standoff: 25 } },
       yaxis: { title: { text: "Hourly Minimum Wage (Nominal $ CAD)" } },
       showlegend: false,
-      margin: { l: 60, b: 130, r: 20, t: 50 },
+      margin: { l: 60, b: 150, r: 20, t: 50 },
       paper_bgcolor: "white",
       plot_bgcolor: "#E5ECF6",
       hovermode: "closest",
       annotations: [{
         xref: "paper", yref: "paper",
-        x: 0.5, y: -0.12,
+        x: 0.5, y: -0.16,
         xanchor: "center", yanchor: "bottom",
         showarrow: false,
         text: "Chart created by the Stone Centre on Wealth and Income Inequality<br>at the Vancouver School of Economics (UBC) using data from Employment and Social Development Canada",
