@@ -821,7 +821,7 @@ html = """<!DOCTYPE html>
 
   function buildLayout() {
     return {
-      title: { text: "Provincial Minimum Wages" },
+      title: { text: "Provincial Minimum Wages - Canada" },
       xaxis: { title: { text: "Year" } },
       yaxis: { title: { text: "Hourly minimum wage (nominal \$ CAD)" } },
       showlegend: false,
