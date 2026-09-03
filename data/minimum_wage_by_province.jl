@@ -715,12 +715,12 @@ html = """<!DOCTYPE html>
 
 <main class="page" style="padding: 1.5rem 1.5rem;">
   <section>
-    <div class="section-label">Chart &mdash; click a province to highlight it</div>
+    <div class="section-label">Chart</div>
     <div id="chart"></div>
   </section>
 
   <section id="rankings">
-    <div class="section-label">Minimum Wage Ranking by Province</div>
+    <div class="section-label">Provincial Rankings</div>
     <div class="rank-controls">
       <div class="rank-slider-row">
         <span class="rank-ctrl-label">Date</span>
