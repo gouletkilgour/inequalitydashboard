@@ -21,18 +21,31 @@ using JSON3
 #        men's rates); series starts 1972-06-01.
 #      Nova Scotia: excludes 1965-02-20 to 1971-07-01; series starts 1972-07-01.
 #      Ontario: excludes 1965-01-01 to 1965-03-29 (Southern Ontario Zone
-#        women's rate below the men's rate); series starts 1965-03-30, once
-#        the Southern Zone rate was equalized.
+#        women's rate below the men's rate); series starts 1965-12-27 (see
+#        below - Ontario also had a regional split until that date).
 #      Prince Edward Island: excludes 1965-01-01 to 1973-07-01; series starts
 #        1974-01-01.
-#  - Early REGIONAL variation (urban vs. non-urban, metropolitan vs. rest of
-#    province) is not sex- or age-based, so it is kept, using the higher/
-#    urban/metropolitan rate (the rate that applied to the majority of each
-#    province's population) as the general series value; the lower rate that
-#    applied elsewhere is noted on the relevant point.
-#  - New Brunswick's 1965-1966 rate applied to "wholesale, retail and
-#    manufacturing"; other sectors had different, unspecified rates at the
-#    time. This is occupational, not sex/age-based, so it is kept.
+#  - Periods of REGIONAL or SECTORAL variation (a rate that did not cover all
+#    workers province-wide - urban vs. non-urban, metropolitan vs. rest of
+#    province, or one sector vs. others) are also excluded entirely, rather
+#    than picking one of the coexisting rates over the other. Each affected
+#    province's series starts at the first date a single rate covered every
+#    worker in the province:
+#      Alberta: excludes 1965-01-01 to 1966-06-30 (separate urban/non-urban
+#        rates); series starts 1966-07-01.
+#      New Brunswick: excludes 1965-01-01 to 1967-12-31 (rate applied only to
+#        wholesale, retail and manufacturing; other sectors had different,
+#        unspecified rates); series starts 1968-01-01.
+#      Ontario: excludes 1965-01-01 to 1965-12-26 (Northern Ontario Zone rate
+#        below the Southern Zone rate, on top of the sex-differentiated
+#        period noted above); series starts 1965-12-27.
+#      Quebec: excludes 1965-01-01 to 1971-04-30 (Montreal metropolitan rate
+#        above the rest-of-province rate); series starts 1971-05-01.
+#      Saskatchewan: excludes 1968-10-01 to 1972-01-01 (metropolitan-area
+#        rate above the rest-of-province rate); series starts 1972-01-02.
+#    Manitoba's urban/rural split (1965-1966) is handled the same way - its
+#    series already started at its first province-wide rate (1966-12-01).
+#    British Columbia never had a regional or sectoral split.
 #  - Qualifiers like "employees 16 years of age or older" note the general
 #    legal working age the rate applied from, not a separate youth sub-rate,
 #    so these points are kept as the general rate.
@@ -76,7 +89,7 @@ const ABBR = Dict(
 # Each entry: (effective_date, rate, note)
 const RAW = Dict(
     "Alberta" => [
-        ("1965-01-01", 1.00, "Urban centres over 5,000 population; non-urban rate was \$0.95. Rate applied province-wide from July 1, 1966."),
+        ("1966-07-01", 1.00, "First rate to apply province-wide; before this date, Alberta had separate urban (\$1.00) and non-urban (\$0.95) rates, which are excluded here."),
         ("1967-08-01", 1.15, ""),
         ("1968-01-01", 1.25, ""),
         ("1970-04-01", 1.40, ""),
@@ -200,10 +213,7 @@ const RAW = Dict(
         ("2025-10-01", 16.00, ""),
     ],
     "New Brunswick" => [
-        ("1965-01-01", 0.75, "Wholesale, retail and manufacturing sectors; other sectors had different rates at the time."),
-        ("1965-07-01", 0.80, "Wholesale, retail and manufacturing sectors; other sectors had different rates at the time."),
-        ("1966-07-01", 0.90, "Wholesale, retail and manufacturing sectors; other sectors had different rates at the time."),
-        ("1968-01-01", 1.00, ""),
+        ("1968-01-01", 1.00, "First rate to cover all sectors; from 1965 it applied only to wholesale, retail and manufacturing (other sectors had different, unspecified rates), which is excluded here."),
         ("1970-01-01", 1.15, ""),
         ("1971-09-01", 1.25, ""),
         ("1972-03-01", 1.40, ""),
@@ -352,7 +362,7 @@ const RAW = Dict(
         ("2026-04-01", 16.75, ""),
     ],
     "Ontario" => [
-        ("1965-03-30", 1.00, "Southern Ontario Zone, the date its women's and men's rates were equalized (prior rates from Jan 1 1965 were sex-differentiated and are excluded here); the Northern Ontario Zone was \$0.90 until reaching parity on December 27, 1965, after which the rate applied province-wide."),
+        ("1965-12-27", 1.00, "First rate to apply province-wide. Prior rates are excluded here: the Southern Ontario Zone had sex-differentiated men's/women's rates until March 30, 1965, and the Northern Ontario Zone had a lower rate (\$0.90) than the Southern Zone until this date."),
         ("1969-01-01", 1.30, ""),
         ("1970-10-01", 1.50, ""),
         ("1971-04-01", 1.65, ""),
@@ -447,14 +457,7 @@ const RAW = Dict(
         ("2026-04-01", 17.00, ""),
     ],
     "Quebec" => [
-        ("1965-01-01", 0.70, "Montreal metropolitan area; rate elsewhere in the province was \$0.64."),
-        ("1965-10-01", 0.85, "Montreal metropolitan area; rate elsewhere was \$0.80."),
-        ("1966-11-01", 1.00, "Montreal metropolitan area; rate elsewhere was \$0.90."),
-        ("1967-04-01", 1.05, "Montreal metropolitan area; rate elsewhere was \$1.00."),
-        ("1968-11-01", 1.25, "Montreal metropolitan area; rate elsewhere was \$1.15."),
-        ("1970-05-01", 1.35, "Montreal metropolitan area; rate elsewhere was \$1.30."),
-        ("1970-11-01", 1.40, "Montreal metropolitan area; rate elsewhere was \$1.35."),
-        ("1971-05-01", 1.45, "Rate unified province-wide from this date."),
+        ("1971-05-01", 1.45, "First rate to apply province-wide; from 1965 Quebec had a higher rate in the Montreal metropolitan area than elsewhere in the province, which is excluded here."),
         ("1971-11-01", 1.50, ""),
         ("1972-08-01", 1.60, ""),
         ("1972-11-01", 1.65, ""),
@@ -514,10 +517,7 @@ const RAW = Dict(
         ("2026-05-01", 16.60, ""),
     ],
     "Saskatchewan" => [
-        ("1968-10-01", 1.05, "Metropolitan areas (Estevan, Melville, Moose Jaw, North Battleford, Prince Albert, Regina, Saskatoon, Swift Current, Weyburn, Yorkton); rate elsewhere was \$0.10 lower."),
-        ("1969-10-01", 1.25, "Metropolitan areas; rate elsewhere was \$0.10 lower."),
-        ("1971-06-01", 1.50, "Metropolitan areas; rate elsewhere was \$0.10 lower."),
-        ("1972-01-02", 1.70, "Rate unified province-wide from this date."),
+        ("1972-01-02", 1.70, "First rate to apply province-wide; from 1968 Saskatchewan had a higher rate in metropolitan areas than elsewhere in the province, which is excluded here."),
         ("1972-07-01", 1.75, ""),
         ("1973-12-01", 2.00, ""),
         ("1974-07-02", 2.25, ""),
@@ -749,8 +749,9 @@ html = """<!DOCTYPE html>
       <h2>Methodology &amp; exclusions</h2>
       <ul>
         <li>This is the general adult minimum wage only &mdash; it excludes separate rates that applied to young/student workers or specific occupations (e.g. liquor servers, homeworkers), which are tracked separately by ESDC.</li>
-        <li><strong>Sex-differentiated rates are excluded.</strong> Newfoundland and Labrador, Nova Scotia, Ontario, and Prince Edward Island each set explicitly lower rates for women than men for some period after 1965. Those periods are omitted; each province's series begins at the first date a single, sex-neutral general rate applied (Ontario: March 30, 1965; Newfoundland and Labrador: June 1, 1972; Nova Scotia: July 1, 1972; Prince Edward Island: January 1, 1974).</li>
-        <li>Early <strong>regional</strong> variation (urban/non-urban, metropolitan/rest-of-province) is not sex- or age-based, so it is retained, using the higher rate that covered the majority of each province's population; the lower rate elsewhere is noted on the affected points (Alberta 1965&ndash;66, Manitoba 1965&ndash;66, Quebec 1965&ndash;71, Saskatchewan 1968&ndash;72).</li>
+        <li><strong>Sex-differentiated rates are excluded.</strong> Newfoundland and Labrador, Nova Scotia, Ontario, and Prince Edward Island each set explicitly lower rates for women than men for some period after 1965.</li>
+        <li><strong>Regional and sectoral variation is also excluded</strong> &mdash; rather than picking one of two coexisting rates (e.g. an urban vs. a non-urban rate), each affected province's series simply starts once a single rate covered every worker in the province: Alberta (urban/non-urban split until 1966), New Brunswick (one rate for wholesale/retail/manufacturing only until 1968), Ontario (a lower Northern Ontario Zone rate until 1965), Quebec (a Montreal-area premium until 1971), Saskatchewan (a metropolitan-area premium until 1972), and Manitoba (urban/rural split until 1966).</li>
+        <li>Putting both exclusions together, each province's series begins at the first date a single rate, with no sex, regional, or sectoral differentiation, covered the whole province: Ontario &mdash; December 27, 1965; British Columbia &mdash; January 1, 1965 (never split); Manitoba &mdash; December 1, 1966; Alberta &mdash; July 1, 1966; New Brunswick &mdash; January 1, 1968; Newfoundland and Labrador &mdash; June 1, 1972; Nova Scotia &mdash; July 1, 1972; Quebec &mdash; May 1, 1971; Saskatchewan &mdash; January 2, 1972; Prince Edward Island &mdash; January 1, 1974.</li>
         <li>Data is shown only through today; rates already enacted for a future date are not included, and the page does not update automatically when new rates take effect.</li>
         <li>Alberta and Saskatchewan currently sit at the bottom of the ranking &mdash; Alberta's general rate has not changed since October 2018.</li>
       </ul>
