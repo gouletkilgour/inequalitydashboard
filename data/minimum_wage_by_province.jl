@@ -49,7 +49,7 @@ using JSON3
 #  - Qualifiers like "employees 16 years of age or older" note the general
 #    legal working age the rate applied from, not a separate youth sub-rate,
 #    so these points are kept as the general rate.
-#  - Data is shown only through today (2026-09-02); rates enacted but not yet
+#  - Data is shown only through today (2026-09-01); rates enacted but not yet
 #    in effect (e.g., increases scheduled for later in 2026 or in 2027) are
 #    excluded. This page does not update automatically for future increases.
 #  - Correction: the source CSV lists British Columbia's $17.85 rate under an
@@ -741,13 +741,13 @@ html = """<!DOCTYPE html>
   const DATA = $(data_json);
   const ABBR = $(abbr_json);
   const PROVINCES = $(provinces_json);
-  const TODAY = "2026-09-02";
+  const TODAY = "2026-09-01";
   const AVERAGE_NAME = "Average";
 
   const HIGHLIGHT_COLOR = "#2a78d6";
   const AVERAGE_HIGHLIGHT_COLOR = "#e34948";
   const MUTED_COLOR = "#c3c2b7";
-  const AVERAGE_COLOR = "#333333";
+  const AVERAGE_COLOR = "#e34948";
 
   // The latest of the ten provinces' series-start dates (Prince Edward
   // Island's, 1974-01-01). The chart starts here for every province, so
@@ -824,7 +824,7 @@ html = """<!DOCTYPE html>
     var plotH = Math.max((el.offsetHeight || 480) - MARGIN_T - MARGIN_B, 80);
     var noteY = -((MARGIN_B - 15) / plotH);
     return {
-      title: { text: "Provincial Minimum Wages - Canada" },
+      title: { text: "Provincial Minimum Wages" },
       xaxis: { title: { text: "Year" } },
       yaxis: { title: { text: "Hourly Minimum Wage (Nominal \$ CAD)" } },
       showlegend: false,
