@@ -312,7 +312,7 @@ html = """<!DOCTYPE html>
   const HIGHLIGHT_COLOR = "#2a78d6";
   const CANADA_HIGHLIGHT_COLOR = "#e34948";
   const MUTED_COLOR = "#c3c2b7";
-  const CANADA_COLOR = "#333333";
+  const CANADA_COLOR = "#e34948";
 
   var currentStat = "coverage";
   var currentGender = "total";
@@ -326,7 +326,7 @@ html = """<!DOCTYPE html>
     var plotH = Math.max((el.offsetHeight || 480) - MARGIN_T - MARGIN_B, 80);
     var noteY = -((MARGIN_B - 15) / plotH);
     return {
-      title: { text: STAT_LABELS[currentStat] + " by Province (" + GENDER_LABELS[currentGender] + ")" },
+      title: { text: STAT_LABELS[currentStat] + " by Province" + (currentGender === "total" ? "" : " (" + GENDER_LABELS[currentGender] + ")") },
       xaxis: { title: { text: "Year" } },
       yaxis: { title: { text: "Percent of Employees (%)" } },
       showlegend: false,
