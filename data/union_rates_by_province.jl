@@ -274,7 +274,7 @@ html = """<!DOCTYPE html>
       <div class="chart-ctrl">
         <span class="chart-ctrl-label">Gender</span>
         <select id="gender-select">
-          <option value="total">Total</option>
+          <option value="total">Both</option>
           <option value="men">Men</option>
           <option value="women">Women</option>
         </select>
@@ -307,7 +307,7 @@ html = """<!DOCTYPE html>
   const YEARS = Array.from({length: 29}, function(_, i) { return 1997 + i; });
 
   const STAT_LABELS = { coverage: "Union Coverage Rate", unionization: "Unionization Rate" };
-  const GENDER_LABELS = { total: "Total", men: "Men", women: "Women" };
+  const GENDER_LABELS = { total: "Both", men: "Men", women: "Women" };
 
   const HIGHLIGHT_COLOR = "#2a78d6";
   const CANADA_HIGHLIGHT_COLOR = "#e34948";
