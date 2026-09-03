@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Provincial Minimum Wages - Canada &mdash; Inequality Dashboard</title>
+  <title>Provincial Minimum Wages &mdash; Inequality Dashboard</title>
   <link rel="stylesheet" href="../style.css" />
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
@@ -95,27 +95,6 @@
     .rank-name { font-size: 0.8rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rank-val  { font-size: 0.76rem; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
 
-    #table-toggle {
-      font-family: inherit;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--accent, #2a5db0);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.75rem 1.25rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    #table-wrap { display: none; overflow: auto; max-height: 420px; }
-    #table-wrap.open { display: block; }
-
-    #history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    #history-table th, #history-table td { text-align: left; padding: 0.4rem 1rem; border-bottom: 1px solid var(--border); }
-    #history-table th { position: sticky; top: 0; background: var(--card-bg); font-weight: 600; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    #history-table td.note { color: var(--muted); font-size: 0.75rem; }
-
     @media (max-width: 700px)  { main { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -129,7 +108,7 @@
 
   <p class="breadcrumb"><a href="../index.html">&larr; All categories</a> / <a href="../minimum_wage.html">Minimum Wage</a></p>
 
-  <h2 class="post-title">Provincial Minimum Wages - Canada</h2>
+  <h2 class="post-title">Provincial Minimum Wages</h2>
 </div>
 
 <main class="page" style="padding: 1.5rem 1.5rem;">
@@ -147,13 +126,6 @@
   </section>
 
   <section class="about-section">
-    <button id="table-toggle" onclick="toggleTable()">&#9662; Show full data table for selected province</button>
-    <div id="table-wrap">
-      <table id="history-table">
-        <thead><tr><th>Effective date</th><th>Rate ($/hr)</th><th>Note</th></tr></thead>
-        <tbody id="history-body"></tbody>
-      </table>
-    </div>
     <div class="prose">
       <h2>What this shows</h2>
       <p>
@@ -174,7 +146,7 @@
         <li><strong>Sex-differentiated rates are excluded.</strong> Newfoundland and Labrador, Nova Scotia, Ontario, and Prince Edward Island each set explicitly lower rates for women than men for some period after 1965.</li>
         <li><strong>Regional and sectoral variation is also excluded</strong> &mdash; rather than picking one of two coexisting rates (e.g. an urban vs. a non-urban rate), each affected province's series simply starts once a single rate covered every worker in the province: Alberta (urban/non-urban split until 1966), New Brunswick (one rate for wholesale/retail/manufacturing only until 1968), Ontario (a lower Northern Ontario Zone rate until 1965), Quebec (a Montreal-area premium until 1971), Saskatchewan (a metropolitan-area premium until 1972), and Manitoba (urban/rural split until 1966).</li>
         <li>Putting both exclusions together, each province's sourced record begins at the first date a single rate, with no sex, regional, or sectoral differentiation, covered the whole province: Ontario &mdash; December 27, 1965; British Columbia &mdash; January 1, 1965 (never split); Manitoba &mdash; December 1, 1966; Alberta &mdash; July 1, 1966; New Brunswick &mdash; January 1, 1968; Newfoundland and Labrador &mdash; June 1, 1972; Nova Scotia &mdash; July 1, 1972; Quebec &mdash; May 1, 1971; Saskatchewan &mdash; January 2, 1972; Prince Edward Island &mdash; January 1, 1974.</li>
-        <li><strong>The chart and data table display every province from January 1, 1974 onward</strong> &mdash; Prince Edward Island's start date, the latest of the ten &mdash; even though most provinces' sourced record (above) goes back further, so every province is shown over the same span and is directly comparable. For a province whose record starts earlier, the displayed series' first point holds whatever rate was already in effect on January 1, 1974 (noted on hover and in the table); no earlier data is discarded, only left out of this display.</li>
+        <li><strong>The chart displays every province from January 1, 1974 onward</strong> &mdash; Prince Edward Island's start date, the latest of the ten &mdash; even though most provinces' sourced record (above) goes back further, so every province is shown over the same span and is directly comparable. For a province whose record starts earlier, the displayed series' first point holds whatever rate was already in effect on January 1, 1974 (noted on hover); no earlier data is discarded, only left out of this display.</li>
         <li>Data is shown only through today; rates already enacted for a future date are not included, and the page does not update automatically when new rates take effect.</li>
         <li>Each province's line is extended flat to today at its last recorded rate (e.g. Alberta's line continues at $15.00 through the present) so a rate that simply hasn't changed recently still reads as in effect, rather than the line appearing to end; this doesn't add a new rate change, only a visual continuation, and is noted on hover.</li>
         <li><strong>Canada (average)</strong> is the unweighted mean of the ten provinces' rates, shown as a dashed line, red when selected (provinces turn blue when selected). It runs the same January 1, 1974 through today span as the provinces, so it's always computed across all ten.</li>
@@ -201,8 +173,8 @@
   const AVERAGE_COLOR = "#333333";
 
   // The latest of the ten provinces' series-start dates (Prince Edward
-  // Island's, 1974-01-01). The chart and the data table both start here for
-  // every province, so all ten (and the average) are shown over the same,
+  // Island's, 1974-01-01). The chart starts here for every province, so
+  // all ten (and the average) are shown over the same,
   // consistent span rather than each starting at its own earliest date.
   const DISPLAY_START = PROVINCES.map(function(p) { return DATA[p].dates[0]; }).sort().pop();
 
@@ -270,7 +242,7 @@
 
   function buildLayout() {
     return {
-      title: { text: "Provincial Minimum Wages - Canada" },
+      title: { text: "Provincial Minimum Wages" },
       xaxis: { title: { text: "Year" } },
       yaxis: { title: { text: "Hourly minimum wage (nominal $ CAD)" } },
       showlegend: false,
@@ -349,30 +321,14 @@
     }).join('');
   }
 
-  function renderTable(name) {
-    var d = name === AVERAGE_NAME ? AVERAGE_SERIES : displaySeries(name);
-    document.getElementById("history-body").innerHTML = d.dates.map(function(date, i) {
-      return '<tr><td>' + date + '</td><td>$' + d.rates[i].toFixed(2) + '</td><td class="note">' + (d.notes[i] || '') + '</td></tr>';
-    }).join('');
-  }
-
   function selectProvince(prov) {
     currentProvince = prov;
     Plotly.react("chart", buildTraces(prov), buildLayout(), { responsive: true });
     renderRanking();
-    renderTable(prov);
-  }
-
-  function toggleTable() {
-    var wrap = document.getElementById("table-wrap");
-    var btn = document.getElementById("table-toggle");
-    wrap.classList.toggle("open");
-    btn.innerHTML = (wrap.classList.contains("open") ? "&#9652; Hide" : "&#9662; Show") + " full data table for selected province";
   }
 
   Plotly.newPlot("chart", buildTraces(currentProvince), buildLayout(), { responsive: true });
   renderRanking();
-  renderTable(currentProvince);
 
   document.getElementById("chart").on("plotly_click", function(evt) {
     if (evt.points && evt.points.length) {
