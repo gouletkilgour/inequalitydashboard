@@ -148,43 +148,13 @@
         <input type="range" id="rank-slider" />
         <span id="rank-slider-date" class="rank-date-value"></span>
       </div>
-      <span class="rank-ctrl-label">Drag the slider to see the ranking on a different date &mdash; click a province to highlight it in the chart</span>
     </div>
     <div id="rank-list" class="rank-list"></div>
   </section>
 
   <section class="about-section">
-    <div class="prose">
-      <h2>What this shows</h2>
-      <p>
-        The <strong>general (basic adult) minimum hourly wage</strong> in each of Canada's ten provinces, plus their unweighted average, from January 1, 1974 &mdash; the date every province has a comparable general rate &mdash; through the present. The average line is shown by default; click any province, or a row in the ranking list, to highlight it instead. Drag the ranking panel's date slider to see how the provinces ranked at an earlier point in time; the chart itself always shows the full history regardless of the slider.
-      </p>
-
-      <h2>Data source</h2>
-      <p>
-        Employment and Social Development Canada (ESDC), <a href="https://open.canada.ca/data/en/dataset/390ee890-59bb-4f34-a37c-9732781ef8a0" target="_blank" rel="noopener">"Historical Minimum Wage Rates in Canada"</a> (dataset 390ee890-59bb-4f34-a37c-9732781ef8a0, resource <code>wages_general-2.csv</code>), Government of Canada Open Government Portal, downloaded September 2, 2026. This is the same underlying data behind the government's public <a href="https://minwage-salairemin.service.canada.ca/" target="_blank" rel="noopener">Minimum Wage Database</a>.
-      </p>
-      <p>
-        British Columbia's June 2025 and June 2026 rates were corrected against BC government news releases (<a href="https://news.gov.bc.ca/releases/2025LBR0017-000500" target="_blank" rel="noopener">2025LBR0017-000500</a>, <a href="https://news.gov.bc.ca/releases/2026LBR0021-000581" target="_blank" rel="noopener">2026LBR0021-000581</a>): the source file mislabeled the $17.85 rate as effective June 1, 2026 instead of June 1, 2025.
-      </p>
-
-      <h2>Methodology &amp; exclusions</h2>
-      <ul>
-        <li>This is the general adult minimum wage only &mdash; it excludes separate rates that applied to young/student workers or specific occupations (e.g. liquor servers, homeworkers), which are tracked separately by ESDC.</li>
-        <li><strong>Sex-differentiated rates are excluded.</strong> Newfoundland and Labrador, Nova Scotia, Ontario, and Prince Edward Island each set explicitly lower rates for women than men for some period after 1965.</li>
-        <li><strong>Regional and sectoral variation is also excluded</strong> &mdash; rather than picking one of two coexisting rates (e.g. an urban vs. a non-urban rate), each affected province's series simply starts once a single rate covered every worker in the province: Alberta (urban/non-urban split until 1966), New Brunswick (one rate for wholesale/retail/manufacturing only until 1968), Ontario (a lower Northern Ontario Zone rate until 1965), Quebec (a Montreal-area premium until 1971), Saskatchewan (a metropolitan-area premium until 1972), and Manitoba (urban/rural split until 1966).</li>
-        <li>Putting both exclusions together, each province's sourced record begins at the first date a single rate, with no sex, regional, or sectoral differentiation, covered the whole province: Ontario &mdash; December 27, 1965; British Columbia &mdash; January 1, 1965 (never split); Manitoba &mdash; December 1, 1966; Alberta &mdash; July 1, 1966; New Brunswick &mdash; January 1, 1968; Newfoundland and Labrador &mdash; June 1, 1972; Nova Scotia &mdash; July 1, 1972; Quebec &mdash; May 1, 1971; Saskatchewan &mdash; January 2, 1972; Prince Edward Island &mdash; January 1, 1974.</li>
-        <li><strong>The chart displays every province from January 1, 1974 onward</strong> &mdash; Prince Edward Island's start date, the latest of the ten &mdash; even though most provinces' sourced record (above) goes back further, so every province is shown over the same span and is directly comparable. For a province whose record starts earlier, the displayed series' first point holds whatever rate was already in effect on January 1, 1974 (noted on hover); no earlier data is discarded, only left out of this display.</li>
-        <li>Data is shown only through today; rates already enacted for a future date are not included, and the page does not update automatically when new rates take effect.</li>
-        <li>Each province's line is extended flat to today at its last recorded rate (e.g. Alberta's line continues at $15.00 through the present) so a rate that simply hasn't changed recently still reads as in effect, rather than the line appearing to end; this doesn't add a new rate change, only a visual continuation, and is noted on hover.</li>
-        <li><strong>Canada (average)</strong> is the unweighted mean of the ten provinces' rates, shown as a dashed line, red when selected (provinces turn blue when selected). It runs the same January 1, 1974 through today span as the provinces, so it's always computed across all ten.</li>
-        <li>Alberta and Saskatchewan currently sit at the bottom of the ranking &mdash; Alberta's general rate has not changed since October 2018.</li>
-      </ul>
-
-      <p class="source">
-        Chart created by the Stone Centre on Wealth and Income Inequality at the Vancouver School of Economics (UBC).
-      </p>
-    </div>
+    <div class="section-label">About this data</div>
+    <div class="prose"></div>
   </section>
 </main>
 
@@ -193,7 +163,7 @@
   const ABBR = {"Newfoundland and Labrador": "NL", "Prince Edward Island": "PE", "Nova Scotia": "NS", "New Brunswick": "NB", "Quebec": "QC", "Ontario": "ON", "Manitoba": "MB", "Saskatchewan": "SK", "Alberta": "AB", "British Columbia": "BC"};
   const PROVINCES = ["Newfoundland and Labrador", "Prince Edward Island", "Nova Scotia", "New Brunswick", "Quebec", "Ontario", "Manitoba", "Saskatchewan", "Alberta", "British Columbia"];
   const TODAY = "2026-09-02";
-  const AVERAGE_NAME = "Canada (average)";
+  const AVERAGE_NAME = "Average";
 
   const HIGHLIGHT_COLOR = "#2a78d6";
   const AVERAGE_HIGHLIGHT_COLOR = "#e34948";
@@ -272,7 +242,7 @@
     return {
       title: { text: "Provincial Minimum Wages - Canada" },
       xaxis: { title: { text: "Year" } },
-      yaxis: { title: { text: "Hourly minimum wage (nominal $ CAD)" } },
+      yaxis: { title: { text: "Hourly Minimum Wage (Nominal $ CAD)" } },
       showlegend: false,
       margin: { l: 60, b: 130, r: 20, t: 50 },
       paper_bgcolor: "white",
