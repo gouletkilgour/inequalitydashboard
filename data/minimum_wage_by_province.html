@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minimum Wage by Province &mdash; Inequality Dashboard</title>
+  <title>Provincial Minimum Wages - Canada &mdash; Inequality Dashboard</title>
   <link rel="stylesheet" href="../style.css" />
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
@@ -87,8 +87,9 @@
       transition: background 0.1s;
     }
 
-    .rank-row:hover       { background: var(--border); }
-    .rank-row.rank-active { background: var(--border); }
+    .rank-row:hover        { background: var(--border); }
+    .rank-row.rank-active  { background: var(--border); }
+    .rank-row.rank-average { font-style: italic; }
 
     .rank-num  { font-size: 0.7rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
     .rank-name { font-size: 0.8rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -128,7 +129,7 @@
 
   <p class="breadcrumb"><a href="../index.html">&larr; All categories</a> / <a href="../minimum_wage.html">Minimum Wage</a></p>
 
-  <h2 class="post-title">Minimum Wage by Province</h2>
+  <h2 class="post-title">Provincial Minimum Wages - Canada</h2>
 </div>
 
 <main class="page" style="padding: 1.5rem 1.5rem;">
@@ -174,6 +175,8 @@
         <li><strong>Regional and sectoral variation is also excluded</strong> &mdash; rather than picking one of two coexisting rates (e.g. an urban vs. a non-urban rate), each affected province's series simply starts once a single rate covered every worker in the province: Alberta (urban/non-urban split until 1966), New Brunswick (one rate for wholesale/retail/manufacturing only until 1968), Ontario (a lower Northern Ontario Zone rate until 1965), Quebec (a Montreal-area premium until 1971), Saskatchewan (a metropolitan-area premium until 1972), and Manitoba (urban/rural split until 1966).</li>
         <li>Putting both exclusions together, each province's series begins at the first date a single rate, with no sex, regional, or sectoral differentiation, covered the whole province: Ontario &mdash; December 27, 1965; British Columbia &mdash; January 1, 1965 (never split); Manitoba &mdash; December 1, 1966; Alberta &mdash; July 1, 1966; New Brunswick &mdash; January 1, 1968; Newfoundland and Labrador &mdash; June 1, 1972; Nova Scotia &mdash; July 1, 1972; Quebec &mdash; May 1, 1971; Saskatchewan &mdash; January 2, 1972; Prince Edward Island &mdash; January 1, 1974.</li>
         <li>Data is shown only through today; rates already enacted for a future date are not included, and the page does not update automatically when new rates take effect.</li>
+        <li>Each province's line is extended flat to today at its last recorded rate (e.g. Alberta's line continues at $15.00 through the present) so a rate that simply hasn't changed recently still reads as in effect, rather than the line appearing to end; this doesn't add a new rate change, only a visual continuation, and is noted on hover.</li>
+        <li><strong>Canada (average)</strong> is the unweighted mean of the ten provinces' rates, shown as a dashed line. It starts January 1, 1974 &mdash; the latest of the ten provinces' start dates (Prince Edward Island's) &mdash; so the average is always computed across all ten provinces rather than jumping as provinces with earlier data drop in.</li>
         <li>Alberta and Saskatchewan currently sit at the bottom of the ranking &mdash; Alberta's general rate has not changed since October 2018.</li>
       </ul>
 
@@ -189,15 +192,69 @@
   const ABBR = {"Newfoundland and Labrador": "NL", "Prince Edward Island": "PE", "Nova Scotia": "NS", "New Brunswick": "NB", "Quebec": "QC", "Ontario": "ON", "Manitoba": "MB", "Saskatchewan": "SK", "Alberta": "AB", "British Columbia": "BC"};
   const PROVINCES = ["Newfoundland and Labrador", "Prince Edward Island", "Nova Scotia", "New Brunswick", "Quebec", "Ontario", "Manitoba", "Saskatchewan", "Alberta", "British Columbia"];
   const TODAY = "2026-09-02";
+  const AVERAGE_NAME = "Canada (average)";
 
   const HIGHLIGHT_COLOR = "#2a78d6";
   const MUTED_COLOR = "#c3c2b7";
+  const AVERAGE_COLOR = "#333333";
 
   var currentProvince = "Ontario";
 
+  // Value in effect on `date`, per the step function defined by (dates, rates)
+  // (dates assumed sorted ascending). Returns undefined if `date` precedes the
+  // series' first entry.
+  function stepValueAt(dates, rates, date) {
+    var v;
+    for (var i = 0; i < dates.length; i++) {
+      if (dates[i] <= date) { v = rates[i]; } else { break; }
+    }
+    return v;
+  }
+
+  // A province's series extended with one extra point at TODAY (holding the
+  // last known rate) if its last recorded change predates today, so the line
+  // visibly continues through the present instead of appearing to end.
+  function extended(prov) {
+    var d = DATA[prov];
+    var dates = d.dates.slice();
+    var rates = d.rates.slice();
+    var notes = d.notes.slice();
+    var lastDate = dates[dates.length - 1];
+    if (lastDate < TODAY) {
+      dates.push(TODAY);
+      rates.push(rates[rates.length - 1]);
+      notes.push("Rate unchanged since " + lastDate + ".");
+    }
+    return { dates: dates, rates: rates, notes: notes };
+  }
+
+  // Unweighted mean of all ten provinces' rates, computed at every date any
+  // province's rate changes. Starts once every province has a general rate
+  // in effect (the latest of the ten start dates, Prince Edward Island's
+  // 1974-01-01) so the average isn't distorted by provinces dropping in and
+  // out of a shifting, smaller set as their series begin at different dates.
+  function computeAverageSeries() {
+    var start = PROVINCES.map(function(p) { return DATA[p].dates[0]; }).sort().pop();
+    var dateSet = {};
+    PROVINCES.forEach(function(p) {
+      DATA[p].dates.forEach(function(dt) { if (dt >= start) { dateSet[dt] = true; } });
+    });
+    dateSet[start] = true;
+    dateSet[TODAY] = true;
+    var dates = Object.keys(dateSet).sort();
+    var rates = dates.map(function(dt) {
+      var vals = PROVINCES.map(function(p) { return stepValueAt(DATA[p].dates, DATA[p].rates, dt); })
+                           .filter(function(v) { return v !== undefined; });
+      return vals.reduce(function(a, b) { return a + b; }, 0) / vals.length;
+    });
+    return { dates: dates, rates: rates, notes: dates.map(function() { return ""; }) };
+  }
+
+  const AVERAGE_SERIES = computeAverageSeries();
+
   function buildLayout() {
     return {
-      title: { text: "General Minimum Wage by Province, 1965–Present" },
+      title: { text: "Provincial Minimum Wages - Canada" },
       xaxis: { title: { text: "Year" } },
       yaxis: { title: { text: "Hourly minimum wage (nominal $ CAD)" } },
       showlegend: false,
@@ -217,9 +274,9 @@
   }
 
   function buildTraces(selected) {
-    return PROVINCES.map(function(prov) {
+    var traces = PROVINCES.map(function(prov) {
       var isSel = prov === selected;
-      var d = DATA[prov];
+      var d = extended(prov);
       return {
         type: "scatter",
         mode: "lines",
@@ -234,34 +291,50 @@
           : (prov + "<br>%{x}<br>$%{y:.2f}/hr<extra></extra>"),
         hoverinfo: isSel ? undefined : "skip",
       };
-    }).sort(function(a, b) {
+    });
+
+    var avgSel = selected === AVERAGE_NAME;
+    traces.push({
+      type: "scatter",
+      mode: "lines",
+      name: AVERAGE_NAME,
+      x: AVERAGE_SERIES.dates,
+      y: AVERAGE_SERIES.rates,
+      line: { shape: "hv", color: avgSel ? HIGHLIGHT_COLOR : AVERAGE_COLOR, width: avgSel ? 3 : 2, dash: avgSel ? "solid" : "dot" },
+      opacity: 1,
+      hovertemplate: AVERAGE_NAME + "<br>%{x}<br>$%{y:.2f}/hr<extra></extra>",
+    });
+
+    return traces.sort(function(a, b) {
       // Draw the selected (highlighted) trace last so it renders on top.
       return (a.name === selected ? 1 : 0) - (b.name === selected ? 1 : 0);
     });
   }
 
-  function latestRate(prov) {
-    var d = DATA[prov];
+  function latestRate(name) {
+    var d = name === AVERAGE_NAME ? AVERAGE_SERIES : DATA[name];
     return d.rates[d.rates.length - 1];
   }
 
   function renderRanking() {
-    var entries = PROVINCES.map(function(prov) {
-      return { province: prov, value: latestRate(prov) };
+    var entries = PROVINCES.concat([AVERAGE_NAME]).map(function(name) {
+      return { name: name, value: latestRate(name) };
     }).sort(function(a, b) { return b.value - a.value; });
 
     document.getElementById("rank-list").innerHTML = entries.map(function(e, i) {
-      var cls = "rank-row" + (e.province === currentProvince ? " rank-active" : "");
-      return '<div class="' + cls + '" onclick="selectProvince(\'' + e.province + '\')">'
+      var cls = "rank-row"
+              + (e.name === currentProvince ? " rank-active" : "")
+              + (e.name === AVERAGE_NAME ? " rank-average" : "");
+      return '<div class="' + cls + '" onclick="selectProvince(\'' + e.name + '\')">'
            + '<span class="rank-num">' + (i + 1) + '</span>'
-           + '<span class="rank-name">' + e.province + '</span>'
+           + '<span class="rank-name">' + e.name + '</span>'
            + '<span class="rank-val">$' + e.value.toFixed(2) + '</span>'
            + '</div>';
     }).join('');
   }
 
-  function renderTable(prov) {
-    var d = DATA[prov];
+  function renderTable(name) {
+    var d = name === AVERAGE_NAME ? AVERAGE_SERIES : DATA[name];
     document.getElementById("history-body").innerHTML = d.dates.map(function(date, i) {
       return '<tr><td>' + date + '</td><td>$' + d.rates[i].toFixed(2) + '</td><td class="note">' + (d.notes[i] || '') + '</td></tr>';
     }).join('');
