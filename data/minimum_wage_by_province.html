@@ -73,6 +73,29 @@
 
     .rank-ctrl-label { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
 
+    .rank-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    #rank-slider {
+      flex: 1;
+      accent-color: var(--accent, #2a5db0);
+      cursor: pointer;
+    }
+
+    .rank-date-value {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      min-width: 8.5em;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
     .rank-list { flex: 1; overflow-y: auto; padding: 0.4rem 0; }
 
     .rank-row {
@@ -118,9 +141,14 @@
   </section>
 
   <section id="rankings">
-    <div class="section-label">Current General Minimum Wage</div>
+    <div class="section-label">Minimum Wage Ranking by Province</div>
     <div class="rank-controls">
-      <span class="rank-ctrl-label">As of September 2, 2026 &mdash; click a province to highlight it</span>
+      <div class="rank-slider-row">
+        <span class="rank-ctrl-label">Date</span>
+        <input type="range" id="rank-slider" />
+        <span id="rank-slider-date" class="rank-date-value"></span>
+      </div>
+      <span class="rank-ctrl-label">Drag the slider to see the ranking on a different date &mdash; click a province to highlight it in the chart</span>
     </div>
     <div id="rank-list" class="rank-list"></div>
   </section>
@@ -129,7 +157,7 @@
     <div class="prose">
       <h2>What this shows</h2>
       <p>
-        The <strong>general (basic adult) minimum hourly wage</strong> in each of Canada's ten provinces, plus their unweighted average, from January 1, 1974 &mdash; the date every province has a comparable general rate &mdash; through the present. The average line is shown by default; click any province, or a row in the ranking list, to highlight it instead.
+        The <strong>general (basic adult) minimum hourly wage</strong> in each of Canada's ten provinces, plus their unweighted average, from January 1, 1974 &mdash; the date every province has a comparable general rate &mdash; through the present. The average line is shown by default; click any province, or a row in the ranking list, to highlight it instead. Drag the ranking panel's date slider to see how the provinces ranked at an earlier point in time; the chart itself always shows the full history regardless of the slider.
       </p>
 
       <h2>Data source</h2>
@@ -299,14 +327,32 @@
     });
   }
 
-  function latestRate(name) {
-    var d = name === AVERAGE_NAME ? AVERAGE_SERIES : DATA[name];
-    return d.rates[d.rates.length - 1];
+  function valueAt(name, date) {
+    if (name === AVERAGE_NAME) { return stepValueAt(AVERAGE_SERIES.dates, AVERAGE_SERIES.rates, date); }
+    return stepValueAt(DATA[name].dates, DATA[name].rates, date);
   }
 
+  // Every date the ranking can actually change: the union of all ten
+  // provinces' rate-change dates (same set AVERAGE_SERIES is computed over),
+  // from DISPLAY_START through today. The ranking slider steps through
+  // these rather than raw calendar days, since the ranking is a step
+  // function that's only ever different at one of these dates.
+  const SLIDER_DATES = AVERAGE_SERIES.dates;
+
+  const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  function formatDate(dateStr) {
+    var p = dateStr.split("-");
+    return MONTH_NAMES[parseInt(p[1], 10) - 1] + " " + parseInt(p[2], 10) + ", " + p[0];
+  }
+
+  var rankDateIndex = SLIDER_DATES.length - 1;
+
   function renderRanking() {
+    var date = SLIDER_DATES[rankDateIndex];
+    document.getElementById("rank-slider-date").textContent = formatDate(date);
+
     var entries = PROVINCES.concat([AVERAGE_NAME]).map(function(name) {
-      return { name: name, value: latestRate(name) };
+      return { name: name, value: valueAt(name, date) };
     }).sort(function(a, b) { return b.value - a.value; });
 
     document.getElementById("rank-list").innerHTML = entries.map(function(e, i) {
@@ -326,6 +372,15 @@
     Plotly.react("chart", buildTraces(prov), buildLayout(), { responsive: true });
     renderRanking();
   }
+
+  var sliderEl = document.getElementById("rank-slider");
+  sliderEl.min = 0;
+  sliderEl.max = SLIDER_DATES.length - 1;
+  sliderEl.value = rankDateIndex;
+  sliderEl.addEventListener("input", function() {
+    rankDateIndex = parseInt(this.value, 10);
+    renderRanking();
+  });
 
   Plotly.newPlot("chart", buildTraces(currentProvince), buildLayout(), { responsive: true });
   renderRanking();
