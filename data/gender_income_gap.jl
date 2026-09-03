@@ -195,21 +195,25 @@ html = """<!DOCTYPE html>
     <div class="section-label">Chart</div>
     <div class="chart-controls">
       <div class="chart-ctrl">
-        <span class="chart-ctrl-label">Measure</span>
-        <select id="measure-select">
-          <option value="market">Market Income</option>
-          <option value="total">Total Income</option>
+        <span class="chart-ctrl-label">Income Type</span>
+        <select id="income-type-select">
+          <option value="market">Market</option>
+          <option value="total">Total</option>
         </select>
       </div>
       <div class="chart-ctrl">
         <span class="chart-ctrl-label">Statistic</span>
-        <select id="stat-select">
-          <option value="mean">Mean (Men &amp; Women)</option>
-          <option value="median">Median (Men &amp; Women)</option>
-          <option value="gap_pct_mean">Gender Gap &mdash; Mean (%)</option>
-          <option value="gap_pct_median">Gender Gap &mdash; Median (%)</option>
-          <option value="gap_abs_mean">Gender Gap &mdash; Mean (\$)</option>
-          <option value="gap_abs_median">Gender Gap &mdash; Median (\$)</option>
+        <select id="statistic-select">
+          <option value="mean">Mean</option>
+          <option value="median">Median</option>
+        </select>
+      </div>
+      <div class="chart-ctrl">
+        <span class="chart-ctrl-label">View</span>
+        <select id="view-select">
+          <option value="amounts">Amounts</option>
+          <option value="gap_pct">Percentage Gap</option>
+          <option value="gap_abs">Dollar Gap</option>
         </select>
       </div>
     </div>
@@ -226,22 +230,15 @@ html = """<!DOCTYPE html>
   const DATA = $(data_json);
 
   const MEASURE_LABELS = { total: "Total Income", market: "Market Income" };
-
-  const STAT_DEFS = {
-    mean:              { mode: "lines",    statKey: "mean" },
-    median:            { mode: "lines",    statKey: "median" },
-    gap_pct_mean:      { mode: "gap-pct",  statKey: "mean",   label: "Gender Gap — Mean (%)" },
-    gap_pct_median:    { mode: "gap-pct",  statKey: "median", label: "Gender Gap — Median (%)" },
-    gap_abs_mean:      { mode: "gap-abs",  statKey: "mean",   label: "Gender Gap — Mean (\$)" },
-    gap_abs_median:    { mode: "gap-abs",  statKey: "median", label: "Gender Gap — Median (\$)" },
-  };
+  const STAT_LABELS = { mean: "Mean", median: "Median" };
 
   const MEN_COLOR = "#2a78d6";
   const WOMEN_COLOR = "#eb6834";
   const GAP_COLOR = "#e34948";
 
-  var currentMeasure = "market";
-  var currentStat = "mean";
+  var currentIncomeType = "market";
+  var currentStatistic = "mean";
+  var currentView = "amounts";
 
   var MARGIN_T = 50, MARGIN_B = 130;
 
@@ -249,33 +246,28 @@ html = """<!DOCTYPE html>
     return DATA[measure][gender][statKey];
   }
 
-  function computeGap(measure, statKey, mode) {
+  function computeGap(measure, statKey, view) {
     var men = seriesFor(measure, "men", statKey);
     var women = seriesFor(measure, "women", statKey);
     var values = men.years.map(function(y, i) {
       var diff = men.values[i] - women.values[i];
-      return mode === "gap-pct" ? (diff / men.values[i]) * 100 : diff;
+      return view === "gap_pct" ? (diff / men.values[i]) * 100 : diff;
     });
     return { years: men.years, values: values };
   }
 
-  function buildTitle(measure, statOption) {
+  function buildTitle(measure, statKey, view) {
     var m = MEASURE_LABELS[measure];
-    switch (statOption) {
-      case "mean":           return m + " by Gender (Mean)";
-      case "median":         return m + " by Gender (Median)";
-      case "gap_pct_mean":   return "Gender Gap in Mean " + m + " (%)";
-      case "gap_pct_median": return "Gender Gap in Median " + m + " (%)";
-      case "gap_abs_mean":   return "Gender Gap in Mean " + m + " (\$)";
-      case "gap_abs_median": return "Gender Gap in Median " + m + " (\$)";
-    }
+    var s = STAT_LABELS[statKey];
+    if (view === "amounts")  return m + " by Gender (" + s + ")";
+    if (view === "gap_pct")  return "Gender Gap in " + s + " " + m + " (%)";
+    return "Gender Gap in " + s + " " + m + " (\$)";
   }
 
-  function buildTraces(measure, statOption) {
-    var def = STAT_DEFS[statOption];
-    if (def.mode === "lines") {
-      var men = seriesFor(measure, "men", def.statKey);
-      var women = seriesFor(measure, "women", def.statKey);
+  function buildTraces(measure, statKey, view) {
+    if (view === "amounts") {
+      var men = seriesFor(measure, "men", statKey);
+      var women = seriesFor(measure, "women", statKey);
       return [
         {
           type: "scatter", mode: "lines", name: "Men",
@@ -291,13 +283,14 @@ html = """<!DOCTYPE html>
         },
       ];
     }
-    var g = computeGap(measure, def.statKey, def.mode);
-    var valueFmt = def.mode === "gap-pct" ? "%{y:.1f}%" : "\$%{y:,.0f}";
+    var g = computeGap(measure, statKey, view);
+    var label = "Gender Gap — " + STAT_LABELS[statKey] + (view === "gap_pct" ? " (%)" : " (\$)");
+    var valueFmt = view === "gap_pct" ? "%{y:.1f}%" : "\$%{y:,.0f}";
     return [{
-      type: "scatter", mode: "lines", name: def.label,
+      type: "scatter", mode: "lines", name: label,
       x: g.years, y: g.values,
       line: { color: GAP_COLOR, width: 2.5 },
-      hovertemplate: valueFmt + "<extra>" + def.label + "</extra>",
+      hovertemplate: valueFmt + "<extra>" + label + "</extra>",
     }];
   }
 
@@ -305,13 +298,12 @@ html = """<!DOCTYPE html>
     var el    = document.getElementById("chart");
     var plotH = Math.max((el.offsetHeight || 480) - MARGIN_T - MARGIN_B, 80);
     var noteY = -((MARGIN_B - 15) / plotH);
-    var def = STAT_DEFS[currentStat];
-    var yTitle = def.mode === "gap-pct" ? "Percent (%)" : "2024 Constant Dollars (\$)";
+    var yTitle = currentView === "gap_pct" ? "Percent (%)" : "2024 Constant Dollars (\$)";
     return {
-      title: { text: buildTitle(currentMeasure, currentStat) },
+      title: { text: buildTitle(currentIncomeType, currentStatistic, currentView) },
       xaxis: { title: { text: "Year" } },
       yaxis: { title: { text: yTitle } },
-      showlegend: def.mode === "lines",
+      showlegend: currentView === "amounts",
       legend: { x: 0.02, y: 0.98, xanchor: "left", yanchor: "top", bgcolor: "rgba(255,255,255,0.7)", bordercolor: "#ddd", borderwidth: 1 },
       margin: { l: 70, b: MARGIN_B, r: 20, t: MARGIN_T },
       paper_bgcolor: "white",
@@ -329,20 +321,25 @@ html = """<!DOCTYPE html>
   }
 
   function rerender() {
-    Plotly.react("chart", buildTraces(currentMeasure, currentStat), buildLayout(), { responsive: true });
+    Plotly.react("chart", buildTraces(currentIncomeType, currentStatistic, currentView), buildLayout(), { responsive: true });
   }
 
-  document.getElementById("measure-select").addEventListener("change", function() {
-    currentMeasure = this.value;
+  document.getElementById("income-type-select").addEventListener("change", function() {
+    currentIncomeType = this.value;
     rerender();
   });
 
-  document.getElementById("stat-select").addEventListener("change", function() {
-    currentStat = this.value;
+  document.getElementById("statistic-select").addEventListener("change", function() {
+    currentStatistic = this.value;
     rerender();
   });
 
-  Plotly.newPlot("chart", buildTraces(currentMeasure, currentStat), buildLayout(), { responsive: true });
+  document.getElementById("view-select").addEventListener("change", function() {
+    currentView = this.value;
+    rerender();
+  });
+
+  Plotly.newPlot("chart", buildTraces(currentIncomeType, currentStatistic, currentView), buildLayout(), { responsive: true });
 
   // Recompute the attribution note's position whenever the chart div is
   // resized. Debounced to avoid a relayout -> resize -> relayout loop.
