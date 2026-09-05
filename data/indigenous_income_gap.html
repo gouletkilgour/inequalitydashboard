@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indigenous Income Gap &mdash; Inequality Dashboard</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    main { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #chart-section { min-height: 640px; }
+
+    .about-section { background: var(--bg); }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+
+    .chart-controls {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .chart-ctrl { display: flex; align-items: center; gap: 0.5rem; }
+    .chart-ctrl-label { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+
+    .chart-controls select {
+      font-family: inherit;
+      font-size: 0.82rem;
+      padding: 0.22rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .chart-controls select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(42, 93, 176, 0.2);
+    }
+
+    #chart { flex: 1; min-height: 540px; }
+
+    .prose { flex: 1; padding: 1.5rem 1.75rem; line-height: 1.7; font-size: 0.93rem; overflow: auto; }
+    .prose p + p { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+
+<div class="page" style="padding-bottom: 1rem;">
+  <header class="site-header">
+    <h1><a href="../index.html">Inequality Dashboard</a></h1>
+    <p class="subtitle">Stone Centre on Wealth and Income Inequality | Vancouver School of Economics | University of British Columbia</p>
+  </header>
+
+  <p class="breadcrumb"><a href="../index.html">&larr; All categories</a> / <a href="../income.html">Income</a></p>
+
+  <h2 class="post-title">Indigenous Income Gap</h2>
+</div>
+
+<main class="page" style="padding: 1.5rem 1.5rem;">
+  <section id="chart-section">
+    <div class="section-label">Chart</div>
+    <div class="chart-controls">
+      <div class="chart-ctrl">
+        <span class="chart-ctrl-label">Income Type</span>
+        <select id="income-type-select">
+          <option value="market">Market</option>
+          <option value="total">Total</option>
+          <option value="aftertax">After-tax</option>
+        </select>
+      </div>
+      <div class="chart-ctrl">
+        <span class="chart-ctrl-label">Statistic</span>
+        <select id="statistic-select">
+          <option value="mean">Mean</option>
+          <option value="median">Median</option>
+        </select>
+      </div>
+      <div class="chart-ctrl">
+        <span class="chart-ctrl-label">View</span>
+        <select id="view-select">
+          <option value="amounts">Amounts</option>
+          <option value="gap_pct">Percentage Gap</option>
+          <option value="gap_abs">Dollar Gap</option>
+        </select>
+      </div>
+    </div>
+    <div id="chart"></div>
+  </section>
+
+  <section class="about-section">
+    <div class="section-label">About this data</div>
+    <div class="prose">
+      <p>Data are from Statistics Canada's Canadian Income Survey (CIS), table <a href="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1110009101" target="_blank" rel="noopener">11-10-0091-01</a>, comparing the Indigenous population (First Nations, M&eacute;tis and Inuit combined) to the non-Indigenous population, Canada, 2012&ndash;2024. Figures are in 2024 constant dollars.</p>
+      <p>The CIS excludes persons living on reserves and other Indigenous settlements in the provinces. Because a substantial share of First Nations people live on reserve, this series understates the income gap facing that population specifically; it is best read as a lower bound on the overall Indigenous/non-Indigenous gap.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+  const DATA = {"market":{"indigenous":{"mean":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[45100.0,48100.0,48700.0,46200.0,49400.0,47200.0,48500.0,49700.0,45800.0,50100.0,48200.0,49000.0,50700.0]},"median":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[32600.0,33300.0,33600.0,30900.0,37100.0,31600.0,35600.0,37500.0,32800.0,37800.0,35600.0,37200.0,36800.0]}},"non_indigenous":{"mean":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[53600.0,54800.0,55400.0,55900.0,55100.0,56400.0,56500.0,56200.0,55500.0,58200.0,58700.0,58800.0,60000.0]},"median":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[38900.0,39900.0,41100.0,40700.0,40300.0,40900.0,41500.0,42300.0,40000.0,42500.0,42800.0,43400.0,43600.0]}}},"total":{"indigenous":{"mean":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[43000.0,46500.0,47600.0,44200.0,47900.0,46500.0,47500.0,49300.0,49500.0,51600.0,48800.0,48800.0,50200.0]},"median":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[30800.0,32600.0,33100.0,29600.0,35100.0,32200.0,35700.0,37600.0,39200.0,39400.0,36900.0,37200.0,36900.0]}},"non_indigenous":{"mean":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[55000.0,55900.0,56400.0,56800.0,56300.0,58000.0,58000.0,58100.0,60700.0,61600.0,61000.0,61000.0,62000.0]},"median":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[41100.0,41900.0,42600.0,42400.0,42400.0,43500.0,44000.0,44800.0,46800.0,47100.0,46100.0,46600.0,46600.0]}}},"aftertax":{"indigenous":{"mean":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[37200.0,39800.0,40900.0,38000.0,41100.0,40100.0,40800.0,42400.0,43000.0,44500.0,42100.0,42400.0,43200.0]},"median":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[28800.0,31000.0,30900.0,28200.0,32800.0,31100.0,33200.0,35200.0,36300.0,36900.0,34500.0,35100.0,34700.0]}},"non_indigenous":{"mean":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[46200.0,46900.0,47100.0,47500.0,47200.0,48500.0,48500.0,48800.0,50900.0,50700.0,50100.0,50300.0,51000.0]},"median":{"years":[2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"values":[37400.0,38200.0,38600.0,38600.0,38600.0,39600.0,39900.0,40600.0,42400.0,42300.0,41700.0,42200.0,42300.0]}}}};
+
+  const MEASURE_LABELS = { market: "Market Income", total: "Total Income", aftertax: "After-tax Income" };
+  const STAT_LABELS = { mean: "Mean", median: "Median" };
+
+  const INDIGENOUS_COLOR = "#c0762c";
+  const NON_INDIGENOUS_COLOR = "#2a78d6";
+  const GAP_COLOR = "#e34948";
+
+  var currentIncomeType = "market";
+  var currentStatistic = "mean";
+  var currentView = "amounts";
+
+  var MARGIN_T = 50, MARGIN_B = 130;
+
+  function seriesFor(measure, group, statKey) {
+    return DATA[measure][group][statKey];
+  }
+
+  function computeGap(measure, statKey, view) {
+    var nonIndig = seriesFor(measure, "non_indigenous", statKey);
+    var indig = seriesFor(measure, "indigenous", statKey);
+    var values = nonIndig.years.map(function(y, i) {
+      var diff = nonIndig.values[i] - indig.values[i];
+      return view === "gap_pct" ? (diff / nonIndig.values[i]) * 100 : diff;
+    });
+    return { years: nonIndig.years, values: values };
+  }
+
+  function buildTitle(measure, statKey, view) {
+    var m = MEASURE_LABELS[measure];
+    var s = STAT_LABELS[statKey];
+    if (view === "amounts")  return m + " by Indigenous Identity (" + s + ")";
+    if (view === "gap_pct")  return "Indigenous Income Gap in " + s + " " + m + " (%)";
+    return "Indigenous Income Gap in " + s + " " + m + " ($)";
+  }
+
+  function buildTraces(measure, statKey, view) {
+    if (view === "amounts") {
+      var indig = seriesFor(measure, "indigenous", statKey);
+      var nonIndig = seriesFor(measure, "non_indigenous", statKey);
+      return [
+        {
+          type: "scatter", mode: "lines", name: "Indigenous",
+          x: indig.years, y: indig.values,
+          line: { color: INDIGENOUS_COLOR, width: 2.5 },
+          hovertemplate: "$%{y:,.0f}<extra>Indigenous</extra>",
+        },
+        {
+          type: "scatter", mode: "lines", name: "Non-Indigenous",
+          x: nonIndig.years, y: nonIndig.values,
+          line: { color: NON_INDIGENOUS_COLOR, width: 2.5 },
+          hovertemplate: "$%{y:,.0f}<extra>Non-Indigenous</extra>",
+        },
+      ];
+    }
+    var g = computeGap(measure, statKey, view);
+    var label = "Indigenous Gap — " + STAT_LABELS[statKey] + (view === "gap_pct" ? " (%)" : " ($)");
+    var valueFmt = view === "gap_pct" ? "%{y:.1f}%" : "$%{y:,.0f}";
+    return [{
+      type: "scatter", mode: "lines", name: label,
+      x: g.years, y: g.values,
+      line: { color: GAP_COLOR, width: 2.5 },
+      hovertemplate: valueFmt + "<extra>" + label + "</extra>",
+    }];
+  }
+
+  function buildLayout() {
+    var el    = document.getElementById("chart");
+    var plotH = Math.max((el.offsetHeight || 480) - MARGIN_T - MARGIN_B, 80);
+    var noteY = -((MARGIN_B - 15) / plotH);
+    var yTitle = currentView === "gap_pct" ? "Percent (%)" : "2024 Constant Dollars ($)";
+    return {
+      title: { text: buildTitle(currentIncomeType, currentStatistic, currentView) },
+      xaxis: { title: { text: "Year" } },
+      yaxis: { title: { text: yTitle } },
+      showlegend: currentView === "amounts",
+      legend: { x: 0.02, y: 0.98, xanchor: "left", yanchor: "top", bgcolor: "rgba(255,255,255,0.7)", bordercolor: "#ddd", borderwidth: 1 },
+      margin: { l: 70, b: MARGIN_B, r: 20, t: MARGIN_T },
+      paper_bgcolor: "white",
+      plot_bgcolor: "#E5ECF6",
+      hovermode: "x unified",
+      annotations: [{
+        xref: "paper", yref: "paper",
+        x: 0.5, y: noteY,
+        xanchor: "center", yanchor: "bottom",
+        showarrow: false,
+        text: "Chart created by the Stone Centre on Wealth and Income Inequality<br>at the Vancouver School of Economics (UBC) using data from Statistics Canada (Canadian Income Survey)",
+        font: { size: 9, color: "#b0b0b0" },
+      }],
+    };
+  }
+
+  function rerender() {
+    Plotly.react("chart", buildTraces(currentIncomeType, currentStatistic, currentView), buildLayout(), { responsive: true });
+  }
+
+  document.getElementById("income-type-select").addEventListener("change", function() {
+    currentIncomeType = this.value;
+    rerender();
+  });
+
+  document.getElementById("statistic-select").addEventListener("change", function() {
+    currentStatistic = this.value;
+    rerender();
+  });
+
+  document.getElementById("view-select").addEventListener("change", function() {
+    currentView = this.value;
+    rerender();
+  });
+
+  Plotly.newPlot("chart", buildTraces(currentIncomeType, currentStatistic, currentView), buildLayout(), { responsive: true });
+
+  // Recompute the attribution note's position whenever the chart div is
+  // resized. Debounced to avoid a relayout -> resize -> relayout loop.
+  var resizeTimer;
+  new ResizeObserver(function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      Plotly.relayout("chart", buildLayout());
+    }, 50);
+  }).observe(document.getElementById("chart"));
+</script>
+
+</body>
+</html>
